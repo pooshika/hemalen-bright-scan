@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import LanguageToggle, { type Language } from "@/components/LanguageToggle";
@@ -54,6 +55,7 @@ const content: Record<Language, {
 
 const LoginPage = () => {
   const [lang, setLang] = useState<Language>("en");
+  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [otp, setOtp] = useState("");
@@ -81,7 +83,7 @@ const LoginPage = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      // Navigate to dashboard would go here
+      navigate("/dashboard");
     }, 1500);
   };
 
