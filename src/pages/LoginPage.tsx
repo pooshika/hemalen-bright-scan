@@ -83,7 +83,7 @@ const LoginPage = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      // Navigate to dashboard would go here
+      navigate("/dashboard");
     }, 1500);
   };
 
