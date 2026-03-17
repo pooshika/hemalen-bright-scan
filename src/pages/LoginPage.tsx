@@ -55,6 +55,7 @@ const content: Record<Language, {
 
 const LoginPage = () => {
   const [lang, setLang] = useState<Language>("en");
+  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [otp, setOtp] = useState("");
