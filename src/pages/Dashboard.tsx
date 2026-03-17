@@ -1,52 +1,98 @@
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Activity, History, User } from "lucide-react";
+import { motion } from "framer-motion";
+import { Activity, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import BottomNav from "@/components/BottomNav";
+import VoiceButton from "@/components/VoiceButton";
+import { useApp } from "@/contexts/AppContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { t, scanHistory } = useApp();
+  const recent = scanHistory.slice(0, 3);
+
+  const severityColor: Record<string, string> = {
+    normal: "text-success",
+    mild: "text-yellow-600",
+    moderate: "text-orange-500",
+    severe: "text-alert",
+    critical: "text-alert",
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border px-5 py-4">
-        <h1 className="text-xl font-bold text-foreground">HemaLen AI</h1>
-        <p className="text-sm text-muted-foreground">Welcome back</p>
+        <h1 className="text-xl font-bold text-foreground">{t("appName")}</h1>
+        <p className="text-sm text-muted-foreground">{t("welcomeBack")}</p>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
-        <div className="flex h-28 w-28 items-center justify-center rounded-full bg-primary/10">
-          <Activity className="h-14 w-14 text-primary" />
+      <main className="flex flex-1 flex-col gap-6 px-5 py-6 overflow-y-auto">
+        {/* Voice Assistant */}
+        <VoiceButton />
+
+        {/* Start Scan CTA */}
+        <motion.div
+          whileTap={{ scale: 0.97 }}
+          onClick={() => navigate("/scan")}
+          className="cursor-pointer rounded-2xl bg-primary p-6 shadow-elevated"
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary-foreground/20">
+              <Activity className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-primary-foreground">{t("startScan")}</h2>
+              <p className="mt-1 text-sm text-primary-foreground/80">{t("startScanDesc")}</p>
+            </div>
+            <ChevronRight className="h-6 w-6 text-primary-foreground/60" />
+          </div>
+        </motion.div>
+
+        {/* Recent Scans */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-foreground">{t("recentScans")}</h3>
+            {recent.length > 0 && (
+              <button onClick={() => navigate("/history")} className="text-sm font-medium text-primary">
+                {t("viewAll")}
+              </button>
+            )}
+          </div>
+
+          {recent.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card p-6 text-center">
+              <p className="text-sm text-muted-foreground">{t("noScans")}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recent.map((scan) => (
+                <div key={scan.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3 shadow-soft">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(scan.timestamp).toLocaleDateString()}
+                    </p>
+                    <p className={`text-sm font-medium ${severityColor[scan.severity]}`}>
+                      {t(scan.severity)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold tabular-nums text-foreground">{scan.hbValue.toFixed(1)}</p>
+                    <p className="text-xs text-muted-foreground">{t("unit")}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground">Start New Scan</h2>
-          <p className="mt-2 text-base text-muted-foreground">
-            Take a photo of your eyelid or nail to estimate hemoglobin levels
-          </p>
+        {/* Diet Tip */}
+        <div className="rounded-xl border border-success/30 bg-success/5 p-4">
+          <p className="text-sm font-semibold text-success">{t("dietTip")}</p>
+          <p className="mt-1 text-sm text-foreground">{t("dietAdvice")}</p>
         </div>
-
-        <Button variant="clinical" size="lg" className="w-full max-w-xs">
-          Begin Screening
-        </Button>
-
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          This is a screening tool, not a final diagnosis.
-        </p>
       </main>
 
-      <nav className="flex items-center justify-around border-t border-border px-4 py-3">
-        <button className="flex flex-col items-center gap-1 text-primary">
-          <Activity className="h-5 w-5" />
-          <span className="text-xs font-medium">Scan</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-muted-foreground">
-          <History className="h-5 w-5" />
-          <span className="text-xs font-medium">History</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-muted-foreground">
-          <User className="h-5 w-5" />
-          <span className="text-xs font-medium">Profile</span>
-        </button>
-      </nav>
+      <BottomNav />
     </div>
   );
 };
