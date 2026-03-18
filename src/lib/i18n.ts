@@ -105,6 +105,9 @@ export const translations: Record<Language, Record<string, string>> = {
     voiceStartScan: "Starting a new scan. Please follow the on-screen guide.",
     voiceHelp: "You can say: start scan, check history, or what is my level.",
     voiceNotUnderstood: "I didn't understand that. Try saying: start scan, help, or check history.",
+    aiAssistant: "AI Assistant",
+    online: "Online",
+    askAnything: "Ask about anemia, diet, scans...",
   },
 
   ta: {
@@ -201,6 +204,9 @@ export const translations: Record<Language, Record<string, string>> = {
     voiceStartScan: "புதிய ஸ்கேன் தொடங்குகிறது. திரை வழிகாட்டியைப் பின்பற்றுங்கள்.",
     voiceHelp: "நீங்கள் சொல்லலாம்: ஸ்கேன் தொடங்கு, வரலாறு பார், அல்லது என் அளவு என்ன.",
     voiceNotUnderstood: "புரியவில்லை. ஸ்கேன் தொடங்கு, உதவி, அல்லது வரலாறு என்று சொல்லுங்கள்.",
+    aiAssistant: "AI உதவியாளர்",
+    online: "ஆன்லைன்",
+    askAnything: "இரத்தசோகை, உணவு, ஸ்கேன் பற்றி கேளுங்கள்...",
   },
 
   hi: {
@@ -297,5 +303,8 @@ export const translations: Record<Language, Record<string, string>> = {
     voiceStartScan: "नया स्कैन शुरू हो रहा है। स्क्रीन गाइड का पालन करें।",
     voiceHelp: "आप कह सकते हैं: स्कैन शुरू करो, इतिहास देखो, या मेरा स्तर क्या है।",
     voiceNotUnderstood: "समझ नहीं आया। स्कैन शुरू करो, मदद, या इतिहास कहें।",
+    aiAssistant: "AI सहायक",
+    online: "ऑनलाइन",
+    askAnything: "एनीमिया, आहार, स्कैन के बारे में पूछें...",
   },
 };

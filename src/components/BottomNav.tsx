@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Activity, History, User } from "lucide-react";
+import { Activity, History, User, Bot } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 const BottomNav = () => {
@@ -10,6 +10,7 @@ const BottomNav = () => {
 
   const items = [
     { key: "/scan", icon: Activity, label: t("navScan") },
+    { key: "/assistant", icon: Bot, label: t("aiAssistant") },
     { key: "/history", icon: History, label: t("navHistory") },
     { key: "/profile", icon: User, label: t("navProfile") },
   ];
