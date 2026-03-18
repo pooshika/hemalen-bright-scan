@@ -204,6 +204,9 @@ export const translations: Record<Language, Record<string, string>> = {
     voiceStartScan: "புதிய ஸ்கேன் தொடங்குகிறது. திரை வழிகாட்டியைப் பின்பற்றுங்கள்.",
     voiceHelp: "நீங்கள் சொல்லலாம்: ஸ்கேன் தொடங்கு, வரலாறு பார், அல்லது என் அளவு என்ன.",
     voiceNotUnderstood: "புரியவில்லை. ஸ்கேன் தொடங்கு, உதவி, அல்லது வரலாறு என்று சொல்லுங்கள்.",
+    aiAssistant: "AI உதவியாளர்",
+    online: "ஆன்லைன்",
+    askAnything: "இரத்தசோகை, உணவு, ஸ்கேன் பற்றி கேளுங்கள்...",
   },
 
   hi: {
