@@ -105,6 +105,9 @@ export const translations: Record<Language, Record<string, string>> = {
     voiceStartScan: "Starting a new scan. Please follow the on-screen guide.",
     voiceHelp: "You can say: start scan, check history, or what is my level.",
     voiceNotUnderstood: "I didn't understand that. Try saying: start scan, help, or check history.",
+    aiAssistant: "AI Assistant",
+    online: "Online",
+    askAnything: "Ask about anemia, diet, scans...",
   },
 
   ta: {
