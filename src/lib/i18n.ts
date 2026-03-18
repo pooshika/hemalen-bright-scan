@@ -303,5 +303,8 @@ export const translations: Record<Language, Record<string, string>> = {
     voiceStartScan: "नया स्कैन शुरू हो रहा है। स्क्रीन गाइड का पालन करें।",
     voiceHelp: "आप कह सकते हैं: स्कैन शुरू करो, इतिहास देखो, या मेरा स्तर क्या है।",
     voiceNotUnderstood: "समझ नहीं आया। स्कैन शुरू करो, मदद, या इतिहास कहें।",
+    aiAssistant: "AI सहायक",
+    online: "ऑनलाइन",
+    askAnything: "एनीमिया, आहार, स्कैन के बारे में पूछें...",
   },
 };
