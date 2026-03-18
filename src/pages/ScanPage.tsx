@@ -24,24 +24,37 @@ const ScanPage = () => {
 
   const startCamera = useCallback(async () => {
     try {
+      // Set up video element BEFORE getting the stream
+      const video = videoRef.current;
+      if (!video) return;
+
+      // Attach event listeners first
+      video.onloadedmetadata = () => {
+        video.play().then(() => {
+          setVideoReady(true);
+        }).catch(() => {
+          setVideoReady(true); // still mark ready even if autoplay blocked
+        });
+      };
+      video.onplaying = () => {
+        setVideoReady(true);
+      };
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
-          setVideoReady(true);
-        };
-      }
+      video.srcObject = stream;
       setCameraActive(true);
+
+      // Fallback: if events don't fire within 2s, force ready
+      setTimeout(() => setVideoReady(true), 2000);
+
       speak(t("voiceGuideStart"), lang);
     } catch (err) {
       console.error("Camera access denied:", err);
       setVoiceStatus("Camera access denied. Please allow camera permissions.");
-      speak("Camera access was denied. Please allow camera permissions and try again.", lang);
     }
   }, [t, lang]);
 
