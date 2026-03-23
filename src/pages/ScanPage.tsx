@@ -24,22 +24,12 @@ const ScanPage = () => {
 
   const startCamera = useCallback(async () => {
     try {
+      setVideoReady(false);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        const video = videoRef.current;
-        video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          video.play().then(() => setVideoReady(true)).catch(() => setVideoReady(true));
-        };
-        // Fallback if metadata already loaded
-        if (video.readyState >= 1) {
-          video.play().then(() => setVideoReady(true)).catch(() => setVideoReady(true));
-        }
-      }
       setCameraActive(true);
       speak(t("voiceGuideStart"), lang);
     } catch (err) {
@@ -55,6 +45,22 @@ const ScanPage = () => {
     setCameraActive(false);
     setVideoReady(false);
   }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const stream = streamRef.current;
+
+    if (!cameraActive || !video || !stream) return;
+
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      video.play().then(() => setVideoReady(true)).catch(() => setVideoReady(true));
+    };
+
+    if (video.readyState >= 1) {
+      video.play().then(() => setVideoReady(true)).catch(() => setVideoReady(true));
+    }
+  }, [cameraActive]);
 
   useEffect(() => {
     return () => {
