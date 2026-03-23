@@ -30,11 +30,15 @@ const ScanPage = () => {
       });
       streamRef.current = stream;
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
-          setVideoReady(true);
+        const video = videoRef.current;
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          video.play().then(() => setVideoReady(true)).catch(() => setVideoReady(true));
         };
+        // Fallback if metadata already loaded
+        if (video.readyState >= 1) {
+          video.play().then(() => setVideoReady(true)).catch(() => setVideoReady(true));
+        }
       }
       setCameraActive(true);
       speak(t("voiceGuideStart"), lang);
