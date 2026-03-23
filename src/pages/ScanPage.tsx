@@ -214,7 +214,7 @@ const ScanPage = () => {
         </div>
 
         {/* Camera / Preview area */}
-        <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border-2 border-border bg-card" style={{ aspectRatio: "4/3" }}>
+        <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border-2 border-border bg-black" style={{ minHeight: "320px", aspectRatio: "4/3" }}>
           {cameraActive && !captured && (
             <>
               <video
@@ -222,12 +222,12 @@ const ScanPage = () => {
                 autoPlay
                 playsInline
                 muted
-                className="h-full w-full object-cover"
-                style={{ transform: "scaleX(-1)" }}
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ transform: "scaleX(-1)", zIndex: 1 }}
               />
               {/* Alignment guide */}
               {videoReady && (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -235,14 +235,14 @@ const ScanPage = () => {
                   />
                 </div>
               )}
-              <p className="absolute bottom-3 left-0 right-0 text-center text-sm font-medium text-primary-foreground bg-foreground/50 mx-4 rounded-lg py-1.5">
+              <p className="absolute bottom-3 left-0 right-0 text-center text-sm font-medium text-primary-foreground bg-foreground/50 mx-4 rounded-lg py-1.5" style={{ zIndex: 3 }}>
                 {t("scanInstructions")}
               </p>
             </>
           )}
 
           {captured && capturedImage && (
-            <img src={capturedImage} alt="Captured" className="h-full w-full object-cover" />
+            <img src={capturedImage} alt="Captured" className="absolute inset-0 h-full w-full object-cover" />
           )}
 
           {!cameraActive && !captured && (
@@ -258,7 +258,7 @@ const ScanPage = () => {
           )}
 
           {analyzing && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-foreground/60">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-foreground/60" style={{ zIndex: 4 }}>
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-foreground border-t-transparent" />
               <p className="mt-3 text-base font-semibold text-primary-foreground">{t("analyzing")}</p>
             </div>
