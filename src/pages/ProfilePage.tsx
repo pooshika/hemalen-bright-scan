@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/BottomNav";
 import { useApp } from "@/contexts/AppContext";
+import { supabase } from "@/integrations/supabase/client";
 import type { Language } from "@/lib/i18n";
 
 const langNames: Record<Language, string> = {
@@ -110,7 +111,10 @@ const ProfilePage = () => {
           variant="outline"
           size="lg"
           className="mt-auto w-full text-alert border-alert/30"
-          onClick={() => navigate("/")}
+          onClick={async () => {
+            await supabase.auth.signOut();
+            navigate("/");
+          }}
         >
           <LogOut className="h-5 w-5 mr-2" />
           {t("logout")}
