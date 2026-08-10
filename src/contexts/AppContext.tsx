@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import type { Language } from "@/lib/i18n";
 import { translations } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ScanRecord {
   id: string;
@@ -43,6 +44,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   });
   const [lastScan, setLastScan] = useState<ScanRecord | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const loadCloudScans = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("scans")
+      .select("id, hb_value, severity, mode, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error || !data) return;
+    setScanHistory(
+      data.map((row) => ({
+        id: row.id,
+        timestamp: new Date(row.created_at).getTime(),
+        hbValue: Number(row.hb_value),
+        severity: row.severity as ScanRecord["severity"],
+        mode: (row.mode === "nail" ? "nail" : "eyelid") as ScanRecord["mode"],
+      }))
+    );
+  }, []);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user.id ?? null);
+      if (session) void loadCloudScans();
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setUserId(data.session?.user.id ?? null);
+      if (data.session) void loadCloudScans();
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [loadCloudScans]);
 
   const handleSetLang = useCallback((l: Language) => {
     setLang(l);
@@ -65,12 +97,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("hemalen-history", JSON.stringify(next));
       return next;
     });
-  }, []);
+    if (userId) {
+      void supabase.from("scans").insert({
+        user_id: userId,
+        hb_value: scan.hbValue,
+        severity: scan.severity,
+        mode: scan.mode,
+      });
+    }
+  }, [userId]);
 
   const clearHistory = useCallback(() => {
     setScanHistory([]);
     localStorage.removeItem("hemalen-history");
-  }, []);
+    if (userId) void supabase.from("scans").delete().eq("user_id", userId);
+  }, [userId]);
 
   const t = useCallback(
     (key: string) => translations[lang][key] || key,
