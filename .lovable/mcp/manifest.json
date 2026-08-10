@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://mogavuqeqxxgzniuqlpy.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "hema-health-ai",
+      "version": "0.1.0",
+      "title": "Hema Health AI"
+    },
+    "tools": [
+      {
+        "name": "list_scans",
+        "title": "List hemoglobin scans",
+        "description": "List the signed-in user's recent HemaLen hemoglobin screening results, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "How many scans to return (1-100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_latest_scan",
+        "title": "Get latest scan",
+        "description": "Get the signed-in user's most recent hemoglobin screening result, if any.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "log_scan",
+        "title": "Log a hemoglobin reading",
+        "description": "Record a hemoglobin reading (g/dL) for the signed-in user, e.g. a lab result. Severity is derived automatically when not provided.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "hb_value": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 25,
+              "description": "Hemoglobin value in g/dL."
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "eyelid",
+                "nail",
+                "lab"
+              ],
+              "default": "lab",
+              "description": "How the reading was obtained."
+            },
+            "severity": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "normal",
+                    "mild",
+                    "moderate",
+                    "severe",
+                    "critical"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Optional severity override."
+            },
+            "notes": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Optional free-text note."
+            }
+          },
+          "required": [
+            "hb_value"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "anemia_guidance",
+        "title": "Anemia guidance",
+        "description": "Look up HemaLen's reference guidance on hemoglobin ranges, anemia symptoms, iron-rich diet, emergency steps, or how to scan.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "enum": [
+                "ranges",
+                "symptoms",
+                "diet",
+                "emergency",
+                "scanning"
+              ],
+              "description": "Which guidance topic to return."
+            }
+          },
+          "required": [
+            "topic"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
