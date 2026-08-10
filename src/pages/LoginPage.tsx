@@ -1,9 +1,12 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { toast } from "sonner";
 import { Globe, Shield, ArrowRight } from "lucide-react";
 import logo from "@/assets/hemalen-logo.png";
 import type { Language } from "@/lib/i18n";
@@ -15,36 +18,71 @@ const langLabels: Record<Language, { code: string; name: string }> = {
 };
 
 const LoginPage = () => {
-  const { lang, setLang, t, setPhone: savePhone } = useApp();
+  const { lang, setLang, t } = useApp();
   const navigate = useNavigate();
-  const [phone, setPhone] = useState("");
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [sentConfirmation, setSentConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const otpRef = useRef<HTMLInputElement>(null);
+
+  const nextPath = (() => {
+    const raw = new URLSearchParams(window.location.search).get("next");
+    if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+    return raw;
+  })();
 
   useEffect(() => {
-    if (step === "otp" && otpRef.current) otpRef.current.focus();
-  }, [step]);
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) navigate(nextPath ?? "/dashboard", { replace: true });
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate(nextPath ?? "/dashboard", { replace: true });
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate, nextPath]);
 
-  const handleSendOtp = () => {
-    if (phone.length < 10) return;
+  const handleSubmit = async () => {
+    if (!email || password.length < 6) return;
     setLoading(true);
-    setTimeout(() => {
+    if (mode === "signup") {
+      const redirect = nextPath
+        ? window.location.origin + nextPath
+        : window.location.origin + "/dashboard";
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: redirect },
+      });
       setLoading(false);
-      setStep("otp");
-    }, 1200);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      if (!data.session) {
+        setSentConfirmation(true);
+        return;
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      setLoading(false);
+      if (error) toast.error(error.message);
+    }
   };
 
-  const handleVerify = () => {
-    if (otp.length < 6) return;
+  const handleGoogle = async () => {
     setLoading(true);
-    setTimeout(() => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + (nextPath ? "/?next=" + encodeURIComponent(nextPath) : ""),
+    });
+    if (result.error) {
       setLoading(false);
-      savePhone(phone);
-      navigate("/dashboard");
-    }, 1500);
+      toast.error("Google sign-in failed. Please try again.");
+      return;
+    }
+    if (result.redirected) return;
+    navigate(nextPath ?? "/dashboard", { replace: true });
   };
 
   const spring = { type: "spring" as const, stiffness: 300, damping: 30 };
@@ -98,28 +136,52 @@ const LoginPage = () => {
             <p className="mt-2 whitespace-pre-line text-base leading-relaxed text-muted-foreground">{t("subtitle")}</p>
           </div>
 
-          <AnimatePresence mode="wait">
-            {step === "phone" ? (
-              <motion.div key="phone" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={spring} className="space-y-4">
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base font-semibold text-muted-foreground">+91</span>
-                  <Input type="tel" inputMode="numeric" placeholder={t("phonePlaceholder")} value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} className="pl-14" maxLength={10} />
-                </div>
-                <Button variant="clinical" size="lg" className="w-full" onClick={handleSendOtp} disabled={phone.length < 10 || loading}>
-                  {loading ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" /> : <>{t("sendOtp")} <ArrowRight className="h-5 w-5" /></>}
-                </Button>
-              </motion.div>
+          <div className="space-y-4">
+            {sentConfirmation ? (
+              <p className="rounded-xl border border-border bg-card p-4 text-center text-sm text-muted-foreground">
+                Check your email to confirm your account, then sign in.
+              </p>
             ) : (
-              <motion.div key="otp" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={spring} className="space-y-4">
-                <p className="text-center text-sm text-muted-foreground">{t("otpSent")} <span className="font-semibold text-foreground">+91 {phone}</span></p>
-                <Input ref={otpRef} type="tel" inputMode="numeric" placeholder={t("enterOtp")} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} maxLength={6} className="text-center text-xl tracking-[0.5em] font-semibold tabular-nums" />
-                <Button variant="clinical" size="lg" className="w-full" onClick={handleVerify} disabled={otp.length < 6 || loading}>
-                  {loading ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" /> : <>{t("verify")} <ArrowRight className="h-5 w-5" /></>}
+              <>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Button
+                  variant="clinical"
+                  size="lg"
+                  className="w-full"
+                  onClick={handleSubmit}
+                  disabled={!email || password.length < 6 || loading}
+                >
+                  {loading ? (
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                  ) : (
+                    <>{mode === "signup" ? "Create account" : "Sign in"} <ArrowRight className="h-5 w-5" /></>
+                  )}
                 </Button>
-                <button onClick={() => { setStep("phone"); setOtp(""); }} className="w-full text-center text-sm font-medium text-primary hover:underline">{t("changeNumber")}</button>
-              </motion.div>
+                <Button variant="outline" size="lg" className="w-full" onClick={handleGoogle} disabled={loading}>
+                  Continue with Google
+                </Button>
+                <button
+                  onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+                  className="w-full text-center text-sm font-medium text-primary hover:underline"
+                >
+                  {mode === "signup" ? "Already have an account? Sign in" : "New here? Create an account"}
+                </button>
+              </>
             )}
-          </AnimatePresence>
+          </div>
         </motion.div>
       </main>
 
